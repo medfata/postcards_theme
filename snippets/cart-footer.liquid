@@ -1,0 +1,462 @@
+<data-island x-data="CartFooter" data-cart-footer on="idle">
+  {% if cart != empty %}
+  <div class="{% if template == 'cart' %}pt-5 lg:pt-10 {% endif %}">
+    <div class="grid grid-cols-14 gap-2  {% if template == 'cart' %} max-w-5xl mx-auto {% endif %}">
+      {% if template == 'cart' and settings.cart_notes_enable %}
+      <div class="col-span-14 md:col-span-6 md:row-span-3">
+        <label class="block text-sm" for="CartSpecialInstructions">
+          {{- 'cart.general.note' | t -}}
+        </label>
+        <data-island class="contents" x-data="CartNote">
+          <textarea name="note" id="CartSpecialInstructions"
+            class="input mb-2 mt-2.5 block w-full p-2 transition-opacity"
+            :class="{ 'opacity-50 cursor-progress' : updating }" :readonly="updating" @change="updateNote"
+            @keyup.debounce.750ms="$dispatch('change')">
+                {{- cart.note -}}
+              </textarea>
+        </data-island>
+      </div>
+      {% endif %}
+      <div class="col-span-14 {% if template == 'cart' %} md:col-span-6 md:col-end-last {% endif %}">
+        <style>
+          /* Shipping protection styles */
+          .shipping-protection-container {
+            display: flex;
+            margin-left: -20px;
+            margin-top: -20px;
+            flex-wrap: nowrap;
+            align-items: stretch;
+          }
+          
+          .shipping-protection-image-container {
+            margin-left: 20px;
+            margin-top: 20px;
+            max-width: 100%;
+          }
+          
+          .shipping-protection-image-wrapper {
+            align-items: center;
+            display: flex;
+            height: 60px;
+            justify-content: center;
+            padding: 0;
+            width: 60px;
+            padding-left: 5px;
+            padding-top: 8px;
+            padding-bottom: 8px;
+          }
+          
+          .shipping-protection-image {
+            max-height: 60px;
+            max-width: 60px;
+          }
+          
+          .shipping-protection-content {
+            margin-left: 20px;
+            margin-top: 20px;
+            max-width: 100%;
+          }
+          
+          .shipping-protection-header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+          }
+          
+          .shipping-protection-title {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 20px;
+            margin-bottom: 8px;
+          }
+          
+          .shipping-protection-price {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 20px;
+            margin-bottom: 8px;
+          }
+          
+          .shipping-protection-description {
+            font-size: 13px;
+            line-height: 18px;
+          }
+          
+          .shipping-protection-toggle-container {
+            margin-left: 20px;
+            margin-top: 20px;
+            max-width: 100%;
+          }
+          
+          /* Toggle switch styles */
+          .styles_ToggleSwitch--active__ {
+            background: #0dcd8d !important;
+            border: 2px solid #fff !important;
+          }
+          
+          .styles_ToggleSwitch__circle--active__ {
+            left: 27px !important;
+          }
+          
+          .styles_ToggleSwitch--loading__ {
+            opacity: 0.5;
+            cursor: wait !important;
+            pointer-events: none;
+          }
+          
+          .styles_ToggleSwitch__circle--loading__ {
+            transition: left 0.3s ease-out, opacity 0.3s;
+          }
+          
+          .styles_ToggleSwitch__ {
+            background: #c4cdd5;
+            border: 2px solid #fff;
+            border-radius: 100px;
+            box-shadow: 0 1.6875px #161d251a, inset 0 1.6875px 0 1.6875px #ffffff0f;
+            box-sizing: border-box;
+            cursor: pointer;
+            height: 27px;
+            margin-right: 0;
+            padding: 2px;
+            position: relative;
+            width: 54px;
+            transition: opacity 0.3s ease;
+          }
+          
+          .styles_ToggleSwitch__circle__ {
+            background: #fff;
+            border-radius: 100%;
+            height: 19px;
+            left: 0;
+            position: relative;
+            top: 0;
+            transition: left .3s ease-out;
+            width: 19px;
+          }
+          
+          .styles_ToggleSwitch__checkMark__ {
+            bottom: 0;
+            height: 10px;
+            left: 10px;
+            margin: auto;
+            position: absolute;
+            top: 0;
+          }
+          
+          /* Responsive styles */
+          @media screen and (max-width: 767px) {
+            .shipping-protection-container {
+              margin-left: 0;
+              margin-top: 0;
+            }
+            
+            .shipping-protection-image-container {
+              margin-left: 0;
+              margin-top: 10px;
+              margin-bottom: 10px;
+            }
+            
+            .shipping-protection-content {
+              margin: 10px;
+              margin-bottom: 0;
+            }
+            
+            .shipping-protection-title, 
+            .shipping-protection-price {
+              font-size: 14px;
+              line-height: 18px;
+              margin-bottom: 5px;
+            }
+            
+            .shipping-protection-description {
+              font-size: 12px;
+              line-height: 16px;
+            }
+            
+            .shipping-protection-toggle-container {
+              margin-left: 0;
+              margin-top: 15px;
+            }
+            
+            .shipping-protection-header {
+              margin-right: 0;
+            }
+          }
+          
+          @media screen and (min-width: 768px) and (max-width: 1023px) {
+            .shipping-protection-container {
+              margin-left: -10px;
+              margin-top: -10px;
+            }
+            
+            .shipping-protection-image-container,
+            .shipping-protection-content,
+            .shipping-protection-toggle-container {
+              margin-left: 10px;
+              margin-top: 10px;
+            }
+          }
+        </style>
+
+        <div class="shipping-protection-container">
+          <div class="shipping-protection-image-container">
+            <div class="shipping-protection-image-wrapper">
+              <img class="shipping-protection-image" src="//postcards.shop/cdn/shop/files/Untitleddesign_6_copy6.png?v=1723676743&width=3000"
+                alt="Shipping Protection">
+            </div>
+          </div>
+          <div class="shipping-protection-content">
+            <div class="shipping-protection-header">
+              <h3 class="shipping-protection-title">Melting Protection</h3>
+              <div class="shipping-protection-price-container">
+                <span class="shipping-protection-price">$2.95</span>
+              </div>
+            </div>
+            <div class="shipping-protection-description">
+              Automatic insurance. Skip the queue. Protect your candles from melting, damage, or loss in transit.
+            </div>
+          </div>
+          <div class="shipping-protection-toggle-container">
+            <div class="styles_AddonsModule__toggle__ upcart-addons-toggle">
+              <div class="styles_ToggleSwitch__" 
+                   x-data="{ 
+                      isInCart: false,
+                      isLoading: false,
+                      variantId: '49980872917265',
+                      
+                      init() {
+                        // Check if product is already in cart on initialization
+                        this.checkIfInCart();
+                        
+                        // Listen for cart updates to update toggle state
+                        document.addEventListener('shapes:cart:afteradditem', this.checkIfInCart.bind(this));
+                        document.addEventListener('shapes:cart:cartqtychange', this.checkIfInCart.bind(this));
+                        document.addEventListener('shapes:cart:update', this.checkIfInCart.bind(this));
+                      },
+                      
+                      checkIfInCart() {
+                        // Fetch cart data to check if our product is in it
+                        fetch(`${theme.routes.cart_url}.js`)
+                          .then(response => response.json())
+                          .then(cart => {
+                            const item = cart.items.find(item => item.variant_id.toString() === this.variantId);
+                            this.isInCart = !!item;
+                            
+                            // Add active class if in cart
+                            this.$el.classList.toggle('styles_ToggleSwitch--active__', this.isInCart);
+                            this.$el.querySelector('.styles_ToggleSwitch__circle__').classList.toggle('styles_ToggleSwitch__circle--active__', this.isInCart);
+                          })
+                          .catch(error => console.error('Error checking cart:', error));
+                      },
+                      
+                      toggleProduct() {
+                        if (this.isLoading) return;
+                        
+                        this.isLoading = true;
+                        this.$el.classList.add('styles_ToggleSwitch--loading__');
+                        this.$el.querySelector('.styles_ToggleSwitch__circle__').classList.add('styles_ToggleSwitch__circle--loading__');
+                        
+                        if (this.isInCart) {
+                          this.removeFromCart();
+                        } else {
+                          this.addToCart();
+                        }
+                      },
+                      
+                      finishLoading() {
+                        this.isLoading = false;
+                        this.$el.classList.remove('styles_ToggleSwitch--loading__');
+                        this.$el.querySelector('.styles_ToggleSwitch__circle__').classList.remove('styles_ToggleSwitch__circle--loading__');
+                      },
+                      
+                      addToCart() {
+                        const formData = new FormData();
+                        formData.append('id', this.variantId);
+                        formData.append('quantity', 1);
+                        
+                        // Important: include the same sections that the theme expects
+                        formData.append('sections', 'cart-items,cart-footer,cart-item-count,cart-live-region');
+                        formData.append('sections_url', window.location.pathname);
+                        
+                        const config = fetchConfigDefaults('application/javascript');
+                        config.body = formData;
+                        config.headers['X-Requested-With'] = 'XMLHttpRequest';
+                        delete config.headers['Content-Type'];
+                        
+                        fetch(`${theme.routes.cart_add_url}`, config)
+                          .then(res => res.json())
+                          .then(data => {
+                            if (data.status) {
+                              console.error(data.description || data.message || window.theme.strings.cartError);
+                            } else {
+                              // Use the same event format the theme expects in cart-items.js
+                              document.body.dispatchEvent(
+                                new CustomEvent('shapes:cart:afteradditem', {
+                                  bubbles: true,
+                                  detail: {
+                                    response: {
+                                      sections: data.sections,
+                                      key: data.key,
+                                      variant_id: data.variant_id
+                                    },
+                                    sourceId: 'toggle-switch'
+                                  }
+                                })
+                              );
+                            }
+                          })
+                          .catch(error => console.error('Error adding product from toggle:', error))
+                          .finally(() => this.finishLoading());
+                      },
+                      
+                      removeFromCart() {
+                        // First we need to find the item in the cart to get its key
+                        fetch(`${theme.routes.cart_url}.js`)
+                          .then(response => response.json())
+                          .then(cart => {
+                            const item = cart.items.find(item => item.variant_id.toString() === this.variantId);
+                            
+                            if (item) {
+                              // Use the change endpoint to set quantity to 0 (remove)
+                              const request = {
+                                ...fetchConfigDefaults('application/javascript'),
+                                body: JSON.stringify({
+                                  id: item.key,
+                                  quantity: 0,
+                                  sections: 'cart-items,cart-footer,cart-item-count,cart-live-region',
+                                  sections_url: window.location.pathname
+                                })
+                              };
+                              
+                              return fetch(theme.routes.cart_change_url, request);
+                            }
+                          })
+                          .then(response => response?.json())
+                          .then(data => {
+                            if (data) {
+                              if (data.status) {
+                                console.error(data.message || window.theme.strings.cartError);
+                              } else {
+                                // Dispatch the cart quantity change event
+                                document.body.dispatchEvent(
+                                  new CustomEvent('shapes:cart:cartqtychange', {
+                                    bubbles: true,
+                                    detail: {
+                                      response: data,
+                                      key: this.variantId,
+                                      quantity: 0,
+                                      previousQuantity: 1,
+                                      variantId: this.variantId,
+                                      originalTarget: this.$el
+                                    }
+                                  })
+                                );
+                              }
+                            }
+                          })
+                          .catch(error => console.error('Error removing product from toggle:', error))
+                          .finally(() => this.finishLoading());
+                      }
+                    }"
+                   @click="toggleProduct()"
+                   :class="{ 'styles_ToggleSwitch--active__': isInCart }"
+                   data-variant-id="49980872917265" 
+                   data-product-id="8950779412753">
+                <div class="styles_ToggleSwitch__circle__" :class="{ 'styles_ToggleSwitch__circle--active__': isInCart }"></div>
+                <div class="styles_ToggleSwitch__checkMark__"><svg width="11" height="10" viewBox="0 0 11 10"
+                    fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9.86554 1.46252L3.36866 8.88752L0.58429 6.10315" stroke="white" stroke-width="0.928125"
+                      stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <dl class="grid grid-cols-2 {% if template == 'cart' %} md:grid-cols-5 {% endif %} items-center text-right">
+          {%- for discount_application in cart.cart_level_discount_applications -%}
+          <div
+            class="col-span-full -mx-1 inline-block flex justify-between rounded-button bg-scheme-accent-1 p-1 text-scheme-accent-1-contrast lg:col-span-full lg:col-start-2">
+            <dt class=" {% if template == 'cart' %} md:col-span-3 {% endif %}">
+              <span class="sr-only">
+                {{- 'customer.order.discount' | t }}:</span><span>{{- discount_application.title -}}</span>
+            </dt>
+            <dd class="{% if template == 'cart' %} md:col-span-2 {% endif %}">
+              -{{ discount_application.total_allocated_amount | money }}
+            </dd>
+          </div>
+          {%- endfor -%}
+          {% comment %} <dt class="text-left {% if template == 'cart' %} md:col-span-3 {% endif %}">
+            {{ 'cart.general.subtotal' | t }}
+          </dt>
+          <dd class="{% if template == 'cart' %} md:col-span-2 {% endif %}">
+            {{ cart.total_price | money_with_currency }}
+          </dd> {% endcomment %}
+        </dl>
+        {% comment %} <p class="mt-2.5 text-right text-xs">
+          {%- if cart.taxes_included -%}
+          {{ 'cart.general.taxes_included_but_shipping_at_checkout' | t }}
+          {%- else -%}
+          {{ 'cart.general.shipping_at_checkout' | t }}
+          {%- endif -%}
+        </p> {% endcomment %}
+      </div>
+      <div
+        class="col-span-14 row-start-3 {% if template == 'cart' %} md:row-start-2 md:col-span-6 md:col-end-last {% endif %}">
+        <div class="relative z-10">
+          <input class="no-js ml-auto block cursor-pointer border-general border-scheme-text px-5 py-2.5" type="submit"
+            name="update" value="{{ 'cart.general.update' | t }}" form="cart">
+          <div class="{% if template == 'cart' %} lg:mt-2.5 {% endif %}" style="cursor: pointer;
+            display: block;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 14px;
+            text-decoration: none;
+            text-decoration: initial;
+            transition: opacity .3s;
+            background: #000000;
+            color: #FFFFFF;
+            border-radius: var(--upcart-internal-global-button-border-radius);
+            padding: 14px !important;
+            font-size: 15px !important;
+            line-height: 1.5;
+            max-width: 100%;
+            text-align: center;">
+            <input type="submit" name="checkout"
+              value="{{ 'cart.general.checkout' | t }} • {{ cart.total_price | money_with_currency }}" form="cart">
+          </div>
+        </div>
+        <p class="mt-2.5 text-right text-xs">
+          {%- if cart.taxes_included -%}
+          {{ 'cart.general.taxes_included_but_shipping_at_checkout' | t }}
+          {%- else -%}
+          {{ 'cart.general.shipping_at_checkout' | t }}
+          {%- endif -%}
+        </p>
+        {%- if additional_checkout_buttons
+        and template == 'cart'
+        and settings.enable_accelerated_checkout
+        -%}
+        <script>
+          const submitBtnEl = document.querySelector(
+            'input[type="submit"][name="checkout"][form="cart"]'
+          );
+
+          if (submitBtnEl) {
+            document.documentElement.style.setProperty(
+              '--checkout-button-height',
+              `${submitBtnEl.getBoundingClientRect().height}px`
+            );
+          }
+        </script>
+        <div class="cart__dynamic-checkout-buttons additional-checkout-buttons mt-2.5 lg:mt-5">
+          {{ content_for_additional_checkout_buttons }}
+        </div>
+        {%- endif -%}
+      </div>
+    </div>
+    <div
+      class="mt-5 inline-block rounded-button bg-scheme-accent-1 p-2.5 text-sm text-scheme-accent-1-contrast empty:hidden"
+      id="cart-errors"></div>
+  </div>
+  {% endif %}
+</data-island>

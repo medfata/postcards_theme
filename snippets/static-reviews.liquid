@@ -1,0 +1,153 @@
+<div class="reviews-root" x-data="{ reviews: [], isLoading: true }" x-init="
+  fetch('{{ 'static_reviews.json' | file_url }}')
+    .then(response => response.json())
+    .then(data => {
+      reviews = data;
+      isLoading = false;
+    })
+    .catch(error => {
+      isLoading = false;
+      console.error('Error fetching reviews:', error);
+    });
+">
+  <h1 class="inline-heading-rte font-heading heading-standard  heading-style break-words text-center full_shadow review-section-header">CUSTOMER REVIEWS</h1>
+  <h5 class="review-description subtitle">Do you sniff & tell?</h5>
+  <div class="reviews" x-show.transition.duration.1000ms="!isLoading">
+    <template x-for="(r, index) in reviews" :key="index">
+      <div class="review-card">
+        <div class="profile-circle">
+          <span class="initials" x-text="r.reviewer_name.charAt(0) + r.reviewer_name.split(' ')[1].charAt(0)"></span>
+        </div>
+        <div class="reviewer-info">
+          <p class="reviewer-name">
+            <span x-text="r.reviewer_name"></span>
+            <span class="verified-customer">- Verified</span>
+          </p>
+          <p class="review-date" x-text="r.date"></p>
+        </div>
+        <div class="rating-stars">
+          <img src="https://cdn.shopify.com/s/files/1/0679/2773/6593/files/5_star_rating.svg?v=1723314597" alt="5 stars" class="five-stars-img">
+        </div>
+        <div class="review-content">
+          <h3 class="review-title" x-text="r.review_title"></h3>
+          <p class="review-description" x-text="r.review"></p>
+        </div>
+      </div>
+    </template>
+  </div>
+  <div class="spinner" x-show="isLoading">Loading Reviews...</div>
+</div>
+
+<style>
+  .review-section-header{
+    margin-bottom: 10px;
+  }
+  .subtitle {
+    font-size: 24px;
+    color: black;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .profile-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #ffce38;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 16px;
+    left: 16px;
+  }
+
+  .initials {
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .review-card {
+    padding: 16px;
+    margin: 0 10px 26px 10px;
+    border-radius: 4px;
+    border: 2px solid #394053;
+    background: #fffcf3;
+    overflow: visible;
+    width: calc(100% - 40px);
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  .reviewer-name {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 2px; 
+    margin-left: 70px; /* Adjusted to account for profile picture */
+  }
+
+  .verified-customer {
+    font-size: 14px;
+    color: green;
+    font-weight: normal;
+    margin-left: 5px; /* Add space between name and 'Verified' */
+  }
+
+  .review-date {
+    font-size: 16px;
+    margin-left: 70px; /* Adjusted to account for profile picture */
+    margin-top: 0px; /* No space between name and date */
+  }
+
+  .rating-stars {
+    margin-left: 70px; /* Align stars with the profile picture */
+    margin-top: 10px; /* Add some space between stars and profile picture */
+  }
+
+  .five-stars-img {
+    width: 120px; /* Increased size */
+    height: auto;
+    margin-left: -70px; /* Align stars with review title and content */
+  }
+
+  .review-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 5px; /* Decreased space between title and description */
+  }
+
+  .review-content {
+    margin-top: 10px; /* Adjust the top margin for more space */
+  }
+
+  .reviews-root {
+    padding: 24px;
+    margin-top: 10px; /* Adjust the margin above the reviews section */
+    margin-bottom: 24px;
+    display: inline-block;
+    clear: both;
+  }
+
+  @media only screen and (min-width: 1024px) {
+    .review-card {
+      width: calc(33.33% - 40px); /* Three reviews per row on desktop */
+      margin: 0 10px 26px 10px; /* Adjust margins to space reviews evenly */
+      display: inline-block;
+    }
+    .reviews {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+  }
+
+  .reviews {
+    position: relative;
+    margin: 0;
+    line-height: 1.4;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
+  }
+</style>

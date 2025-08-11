@@ -1,0 +1,381 @@
+{% unless product.has_only_default_variant %}
+  <div
+    class="{{ block_base_classes }} space-y-2.5"
+    {{ block.shopify_attributes }}
+  >
+    <style>
+      .pack-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        justify-content: space-between;
+        position: relative;
+        align-items: end;
+      }
+      
+      .pack-option {
+        flex: 1;
+        min-width: 105px;
+        min-height: 180px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: border-color 0.2s;
+        background-color: white;
+        position: relative;
+        border-bottom-right-radius: 8px;
+        border-bottom-left-radius: 8px;
+        border: 2px solid black;
+      }
+      
+      .party-pack-container {
+        flex: 1;
+        min-width: 105px;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .free-shipping-container {
+        width: 100%;
+        margin-bottom: 0;
+        text-align: center;
+      }
+      
+      .free-shipping-badge {
+        display: block;
+        width: 100%;
+        background-color: #FF4136;
+        color: white;
+        padding: 2px 5px;
+        border-radius: 0;
+        font-size: 12px;
+        font-weight: 800;
+        box-sizing: border-box;
+        margin-bottom: 5px;
+        border: 2px solid black;
+      }
+      
+      .pack-option.selected {
+        background-color: #fffbe8;
+      }
+      
+      .pack-header {
+        background-color: #FFD700;
+        padding: 6px 5px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 12px;
+        position: relative;
+        white-space: nowrap;
+      }
+      
+      .pack-content {
+        padding-top: 8px;
+        text-align: center;
+        border-top: 2px solid black;
+      }
+      
+      .pack-title {
+        font-size: 19px;
+        font-weight: 800;
+        margin-bottom: 3px;
+        line-height: 1.1;
+      }
+      
+      .pack-price {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 2px;
+      }
+      
+      .pack-price-red {
+        color: #FF4136;
+      }
+      
+      .pack-regular-price {
+        color: #767676;
+        text-decoration: line-through;
+        font-size: 14px;
+      }
+      
+      .pack-per-candle {
+        font-size: 11px;
+        margin-bottom: 5px;
+      }
+      
+      .pack-savings {
+        background-color: #2ECC40;
+        color: white;
+        padding: 5px 2px;
+        font-weight: 700;
+        font-size: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+      }
+      
+      .savings-amount {
+        font-size: 10px;
+      }
+      
+      .reg-price-label {
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+    </style>
+    {% assign option_style = block.settings.option_style %}
+    {% assign is_color = false %}
+    {% for option in product.options_with_values %}
+      {% liquid
+        if block.settings.enable_color_swatches
+          assign swatch_trigger = 'products.product.color_swatch_trigger' | t | downcase
+          assign option_downcase = option.name | downcase
+          if option_downcase contains swatch_trigger
+            assign is_color = true
+          elsif swatch_trigger == 'color' and option_downcase contains 'colour'
+            assign is_color = true
+          endif
+        endif
+
+        assign swatches_count = option.values | map: 'swatch' | compact | size
+      %}
+
+      <fieldset class="product-variant-picker-block {% if is_color or swatches_count > 0 %}-mx-color-fieldset-offset {% endif %} js-enabled">
+        {% assign option_downcase = option.name | downcase %}
+        {%- if option_downcase == 'packs' -%}
+          <div class="pack-grid">
+            {% for value in option.values %}
+              {% assign pack_type = value | handleize %}
+              {% if pack_type contains 'party-pack' %}
+                <div class="party-pack-container">
+                  <div class="free-shipping-container">
+                    <div class="free-shipping-badge">
+                      FREE SHIPPING
+                    </div>
+                  </div>
+              {% endif %}
+              <div class="pack-option" data-pack-type="{{ pack_type }}" {% if pack_type contains 'solo-traveler' %}style="min-height: 132px;"{% endif %}>
+                <input
+                  type="radio"
+                  id="Option{{ option.position }}-{{ value | escape }}"
+                  name="options[{{ option.name | escape }}]"
+                  value="{{ value | escape }}"
+                  class="hidden"
+                  data-single-option-selector
+                  data-position="{{ option.position }}"
+                  {% if option.selected_value == value %}
+                    checked
+                  {% endif %}
+                  @change="optionChange"
+                  x-init="$el.checked && $el.closest('.pack-option').classList.add('selected')"
+                  x-on:change="
+                    document.querySelectorAll('.pack-option').forEach(p => p.classList.remove('selected'));
+                    $el.closest('.pack-option').classList.add('selected');
+                  "
+                >
+                <label for="Option{{ option.position }}-{{ value | escape }}">
+                  <div class="pack-header">
+                    {% if pack_type contains 'solo-traveler' %}
+                      SOLO TRAVELER
+                    {% elsif pack_type contains 'adventure-pack' %}
+                      ADVENTURE PACK
+                    {% elsif pack_type contains 'party-pack' %}
+                      THE PARTY PACK
+                    {% endif %}
+                  </div>
+                  <div class="pack-content">
+                    <div class="pack-title">
+                      {% if pack_type contains 'solo-traveler' %}
+                        BUY 1<br>CANDLE
+                      {% elsif pack_type contains 'adventure-pack' %}
+                        BUY 3<br>CANDLES
+                      {% elsif pack_type contains 'party-pack' %}
+                        BUY 4, GET<br>1 FREE
+                      {% endif %}
+                    </div>
+                    <div class="pack-price {% unless pack_type contains 'solo-traveler' %}pack-price-red{% endunless %}">
+                      {% for variant in product.variants %}
+                        {% if variant.title == value %}
+                          {{ variant.price | money }}
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                    {% if pack_type contains 'solo-traveler' %}
+                      <div class="reg-price-label">
+                        REG PRICE
+                      </div>
+                    {% else %}
+                      <div class="pack-regular-price">
+                        {% for variant in product.variants %}
+                          {% if variant.title == value %}
+                            {{ variant.compare_at_price | money }}
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                      {% for variant in product.variants %}
+                        {% if variant.title == value and variant.compare_at_price > variant.price %}
+                          <div class="pack-savings">
+                            SAVE {{ variant.compare_at_price | minus: variant.price | times: 100.0 | divided_by: variant.compare_at_price | round }}%
+                            <div class="savings-amount">
+                              {{ variant.compare_at_price | minus: variant.price | money }} OFF
+                            </div>
+                          </div>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                  </div>
+                </label>
+              </div>
+              {% if pack_type contains 'party-pack' %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {%- elsif is_color == false and option_style != 'buttons' and swatches_count <= 0 -%}
+          <div class="my-1 lg:flex lg:items-center lg:justify-start">
+            <label
+              class="{{ label_class }} break-words pr-2.5 lg:w-1/4 lg:shrink-0 xl:w-1/5"
+              for="Option{{ option.position }}-{{ section.id }}"
+            >
+              {{ option.name }}
+            </label>
+            <select
+              id="Option{{ option.position }}-{{ section.id }}"
+              name="options[{{ option.name | escape }}]"
+              @change="optionChange"
+              class="single-option-selector font-body input mt-2.5 w-full appearance-none text-base lg:mt-0 "
+              data-single-option-selector
+              data-position="{{ option.position }}"
+            >
+              {% for value in option.values %}
+                <option
+                  value="{{ value | escape }}"
+                  {% if option.selected_value == value %}
+                    selected="selected"
+                  {% endif %}
+                >
+                  {{ value }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        {%- else -%}
+          <div class="my-1 lg:flex lg:items-center lg:justify-start">
+            <legend class="{{ label_class }} pr-2.5 lg:w-1/4 lg:shrink-0 xl:w-1/5">
+              {{ option.name -}}
+              {%- if is_color or swatches_count > 0 -%}
+                :<br>
+                <span
+                  class="mt-1 inline-block"
+                  x-text="options[{{ forloop.index0 }}]"
+                ></span>
+              {%- endif %}
+            </legend>
+            {%- liquid
+              assign container_class = 'flex flex-wrap gap-2.5'
+              assign button_class = 'inline-block'
+              assign button_label_class = ''
+
+              if block.settings.full_width_buttons and is_color == false and swatches_count <= 0
+                assign container_class = 'grid grid-cols-2 gap-2.5'
+                assign button_class = 'w-full'
+                assign button_label_class = 'block w-full'
+                assign values_size = option.values.size
+                assign divisible_by_2 = values_size | modulo: 2
+                assign divisible_by_3 = values_size | modulo: 3
+                if divisible_by_2 == 0
+                  assign container_class = 'grid grid-cols-2 gap-2.5'
+                elsif divisible_by_3 == 0
+                  assign container_class = 'grid grid-cols-3 gap-2.5'
+                endif
+              endif
+            -%}
+            <div class="mt-2.5 {{ container_class }} lg:flex-1">
+              {% for value in option.values %}
+                {%- liquid
+                  assign variant_label_state = true
+                  if product.options.size == 1
+                    unless product.variants[forloop.index0].available
+                      assign variant_label_state = false
+                    endunless
+                  endif
+                  assign color_image = value | handle | append: '.' | append: 'png' | file_img_url: '120x' | prepend: 'https:'
+                  assign color_swatch_fallback = value | split: ' ' | last | handle
+                -%}
+                <div class="variant-input relative break-words {{ button_class }}">
+                  <input
+                    class="{% if is_color or swatches_count > 0 %}color-swatch{% endif %} custom-button peer absolute left-0 top-0 h-full w-full cursor-pointer opacity-0"
+                    @change="optionChange"
+                    type="radio"
+                    id="Section-{{ section.id }}-Option{{ option.position }}-{{ value | escape }}"
+                    name="Section-{{ section.id }}-options[{{ option.name }}]"
+                    value="{{ value | escape }}"
+                    data-handle="{{ value | handleize }}"
+                    {% if option.selected_value == value %}
+                      checked
+                    {% endif %}
+                    data-single-option-selector
+                    data-position="{{ option.position }}"
+                  >
+                  <label
+                    class="
+                      {% if is_color or swatches_count > 0 %}
+                        block rounded-button bg-scheme-secondary-background
+                      {% else %}
+                        btn after:hidden {{ button_label_class }}
+                        bg-scheme-secondary-background text-scheme-text peer-checked:bg-scheme-text peer-checked:text-scheme-text-contrast
+                        px-2 lg:px-4
+                      {% endif %}
+                      cursor-pointer
+                      {% unless variant_label_state %}
+                        line-through
+                      {% endunless %}
+                      cursor-pointer
+                    "
+                    for="Section-{{ section.id }}-Option{{ option.position }}-{{ value | escape }}"
+                    title="{{ option.value }}"
+                  >
+                    {%- if is_color or swatches_count > 0 %}
+                      {%- unless variant_label_state -%}
+                        <span
+                          class="absolute bottom-0 left-0 top-1/2 z-10 h-[var(--input-border-width)] w-full -translate-y-1/2 -rotate-45 bg-scheme-text"
+                        ></span>
+                      {%- endunless -%}
+                      {%- if swatches_count > 0 -%}
+                        {%- liquid
+                          assign swatch = value.swatch
+                          assign swatch_image = swatch.image
+                          assign swatch_color = swatch.color
+                        -%}
+                        <span
+                          class="block h-8 w-8 rounded-button bg-cover"
+                          style="background-position: {{ swatch_image.presentation.focal_point | default: 'center' }};{% if swatch_image != blank %} background-image: url({{ swatch_image | image_url: width: 160 }});{% else %}{% endif %}{% if swatch_color != blank %} background-color: rgb({{ swatch_color.rgb }});{% endif %}"
+                        ></span>
+                      {%- elsif is_color -%}
+                        <span
+                          class="block h-8 w-8 rounded-button bg-cover"
+                          style="background-image: url({{ color_image }}); background-color: {{ color_swatch_fallback }};"
+                        ></span>
+                      {%- endif -%}
+                    {%- endif -%}
+                    <span
+                      {% if is_color or swatches_count > 0 %}
+                        class="sr-only"
+                      {% endif %}
+                    >
+                      {{- value -}}
+                    </span>
+                  </label>
+                </div>
+              {% if pack_type contains 'party-pack' %}
+                </div>
+              {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        {%- endif -%}
+      </fieldset>
+    {% endfor %}
+  </div>
+{% endunless %}

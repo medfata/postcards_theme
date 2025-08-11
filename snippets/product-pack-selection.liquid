@@ -1,0 +1,399 @@
+{% comment %}
+  Product Pack Selection
+  - Used to select different purchasing options (1, 3, or 4+1 candles)
+  - Displays price per pack with savings information
+{% endcomment %}
+
+{% liquid
+  assign single_price = product.price
+  
+  assign adventure_pack_title = block.settings.adventure_pack_title | default: "ADVENTURE PACK"
+  assign party_pack_title = block.settings.party_pack_title | default: "THE PARTY PACK"
+  
+  assign adventure_pack_per_candle = block.settings.adventure_pack_per_candle | default: 23.40
+  assign adventure_pack_quantity = block.settings.adventure_pack_quantity | default: 3
+  assign adventure_pack_price = adventure_pack_per_candle | times: adventure_pack_quantity
+  assign adventure_pack_original = single_price | times: adventure_pack_quantity
+  assign adventure_pack_savings = adventure_pack_original | minus: adventure_pack_price
+  assign adventure_pack_savings_percentage = adventure_pack_savings | divided_by: adventure_pack_original | times: 100 | round
+  
+  assign party_pack_per_candle = block.settings.party_pack_per_candle | default: 20.40
+  assign party_pack_quantity = block.settings.party_pack_quantity | default: 4
+  assign party_pack_free = block.settings.party_pack_free_quantity | default: 1
+  assign party_pack_free_shipping = block.settings.party_pack_free_shipping | default: true
+  assign party_pack_total_quantity = party_pack_quantity | plus: party_pack_free
+  assign party_pack_price = party_pack_per_candle | times: party_pack_quantity
+  assign party_pack_original = single_price | times: party_pack_total_quantity
+  assign party_pack_savings = party_pack_original | minus: party_pack_price
+  assign party_pack_savings_percentage = party_pack_savings | divided_by: party_pack_original | times: 100 | round
+  
+  assign adventure_variant = product.variants | where: "option1", "Adventure Pack" | first
+  assign party_variant = product.variants | where: "option1", "Party Pack" | first
+%}
+
+<style>
+  .product-pack-selection {
+    margin-bottom: 15px;
+  }
+  
+  .pack-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: space-between;
+    position: relative;
+    align-items: end;
+  }
+  
+  .pack-option {
+    flex: 1;
+    min-width: 105px;
+    min-height: 190px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    background-color: white;
+    position: relative;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+  }
+  
+ 
+  .pack-option.selected {
+    background-color:  #fffbe8;
+  }
+  
+  .pack-header {
+    background-color: #FFD700;
+    padding: 6px 5px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 12px;
+    position: relative;
+    border: 2px solid black;
+    font-family: 'Montserrat';
+  }
+  
+  .pack-content {
+    padding-top: 8px;
+    text-align: center;
+    border: 2px solid black;
+    border-top: 0;
+  }
+  
+  .pack-title {
+    font-size: 19px;
+    font-weight: 800;
+    margin-bottom: 3px;
+    line-height: 1.1;
+  }
+  
+  .pack-price {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  
+  .pack-price-red {
+    color: #FF4136;
+  }
+  
+  .pack-regular-price {
+    color: #767676;
+    text-decoration: line-through;
+    font-size: 14px;
+  }
+  
+  .pack-per-candle {
+    font-size: 11px;
+    margin-bottom: 5px;
+  }
+  
+  .pack-savings {
+    background-color: #2ECC40;
+    color: white;
+    padding: 5px 2px;
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px dashed black;
+    border-top: 0;
+  }
+  
+  .savings-amount {
+    font-size: 10px;
+  }
+  
+  .party-pack-container {
+    flex: 1;
+    min-width: 105px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .free-shipping-container {
+    width: 100%;
+    margin-bottom: 0;
+    text-align: center;
+  }
+  
+  .free-shipping-badge {
+    display: block;
+    width: 100%;
+    background-color: #FF4136;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 0;
+    font-size: 12px;
+    font-weight: 800;
+    box-sizing: border-box;
+    margin-bottom: 5px;
+    border: 2px solid black;
+    text-align: center;
+  }
+  
+  .add-to-cart-btn-custom {
+    margin-top: 15px;
+    width: 100%;
+    background-color: #FFD700;
+    border: 1px solid #000;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .add-to-cart-btn-custom:hover {
+    background-color: #FFC700;
+  }
+  
+  .reg-price-label {
+    font-style: italic;
+    color: #767676;
+    font-size: 12px;
+  }
+  .pack-option:first-of-type{
+    border: none;
+    display: flex;
+    flex-direction: column;
+    height: 111px;
+    justify-content: center;
+  }
+  
+  /* Mobile-specific styles */
+  @media (max-width: 767px) {
+    .pack-option:first-of-type{
+      min-height: 100px !important;
+    }
+    .pack-grid {
+      gap: 6px;
+    }
+    
+    .pack-option {
+      min-width: 85px;
+      min-height: 150px;
+    }
+    
+    .party-pack-container {
+      min-width: 85px;
+    }
+    
+    .pack-header {
+      padding: 4px 2px;
+      font-size: 10px;
+    }
+    
+    .pack-content {
+      padding: 6px 3px;
+    }
+    
+    .pack-title {
+      font-size: 13px;
+    }
+    
+    .pack-price {
+      font-size: 15px;
+    }
+    
+    .pack-regular-price {
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+    
+    .pack-per-candle {
+      font-size: 9px;
+      margin-bottom: 3px;
+    }
+    
+    .pack-savings {
+      padding: 3px 2px;
+      font-size: 13px;
+    }
+    
+    .savings-amount {
+      font-size: 11px;
+    }
+    
+    .add-to-cart-btn-custom {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    
+    .free-shipping-badge {
+      padding: 1px 3px;
+      font-size: 11px;
+    }
+    
+    .reg-price-label {
+      font-size: 10px;
+    }
+  }
+</style>
+
+<div class="product-pack-selection">
+  <div class="pack-grid">
+    <!-- Solo Traveler - 1 Candle -->
+    <div class="pack-option" data-pack-type="solo" style="min-height: 132px; border: 2px solid black;">
+      <div class="pack-header" style="border: none; border-bottom: 2px solid black;">
+        SOLO TRAVELER
+      </div>
+      <div class="pack-content" style="border:none">
+        <div class="pack-title">
+          BUY 1<br>CANDLE
+        </div>
+        <div class="pack-price">
+          {{ product.price | money }}
+        </div>
+        <div class="reg-price-label">
+          REG PRICE
+        </div>
+      </div>
+    </div>
+
+    <!-- Adventure Pack - 3 Candles -->
+    <div class="pack-option" data-pack-type="adventure">
+      <div class="pack-header">
+        {{ adventure_pack_title }}
+      </div>
+      <div class="pack-content">
+        <div class="pack-per-candle">
+          ({{ adventure_pack_per_candle | money }} / CANDLE)
+        </div>
+        <div class="pack-title">
+          BUY {{ adventure_pack_quantity }}<br>CANDLES
+        </div>
+        <div class="pack-price pack-price-red">
+          {{ adventure_pack_price | money }}
+        </div>
+        <div class="pack-regular-price">
+          $70.20
+        </div>
+      </div>
+      <div class="pack-savings">
+        SAVE {{ adventure_pack_savings_percentage }}%
+        <div class="savings-amount">
+            $7.80 OFF
+        </div>
+      </div>
+    </div>
+
+    <!-- Party Pack - Buy 4, Get 1 Free -->
+    <div class="party-pack-container">
+      {% if party_pack_free_shipping %}
+      <div class="free-shipping-badge">
+        FREE SHIPPING!
+      </div>
+      {% endif %}
+      <div class="pack-option" data-pack-type="party">
+        <div class="pack-header">
+          {{ party_pack_title }}
+        </div>
+        <div class="pack-content">
+          <div class="pack-per-candle">
+            ({{ party_pack_per_candle | money }} / CANDLE)
+          </div>
+          <div class="pack-title">
+            BUY {{ party_pack_quantity }}, GET<br>{{ party_pack_free }} FREE
+          </div>
+          <div class="pack-price pack-price-red">
+            $104.00
+          </div>
+          <div class="pack-regular-price">
+            {{ party_pack_original | money }}
+          </div>
+        </div>
+        <div class="pack-savings">
+          SAVE {{ party_pack_savings_percentage }}%
+          <div class="savings-amount">
+            $26.00 OFF
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <button class="add-to-cart-btn-custom" id="custom-add-to-cart">
+    ADD TO CART
+  </button>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const packOptions = document.querySelectorAll('.pack-option');
+    const addToCartForm = document.querySelector('form[data-product-form]');
+    const customAddToCartBtn = document.getElementById('custom-add-to-cart');
+    
+    // Ensure we have the variant input for pack variants
+    let variantInput = addToCartForm.querySelector('input[name="id"]');
+    if (!variantInput) {
+      variantInput = document.createElement('input');
+      variantInput.type = 'hidden';
+      variantInput.name = 'id';
+      addToCartForm.appendChild(variantInput);
+    }
+    
+    let selectedPack = null;
+    
+    packOptions.forEach(pack => {
+      pack.addEventListener('click', function() {
+        packOptions.forEach(p => p.classList.remove('selected'));
+        this.classList.add('selected');
+        selectedPack = this;
+        
+        const packType = this.dataset.packType;
+        
+        // Update button text and variant based on pack type
+        let buttonText = 'ADD TO CART';
+        
+        if (packType === 'solo') {
+          // For solo traveler, use the product's first available variant
+          variantInput.value = '{{ product.selected_or_first_available_variant.id }}';
+          buttonText = 'Add to cart - {{ product.price | money }}';
+        } else if (packType === 'adventure' && '{{ adventure_variant.id }}') {
+          variantInput.value = '{{ adventure_variant.id }}';
+          buttonText = 'Add ADVENTURE PACK - {{ adventure_variant.price | money }}';
+        } else if (packType === 'party' && '{{ party_variant.id }}') {
+          variantInput.value = '{{ party_variant.id }}';
+          buttonText = 'Add THE PARTY PACK - {{ party_variant.price | money }}';
+        }
+        customAddToCartBtn.textContent = buttonText;
+      });
+    });
+
+    // Select Solo Traveler by default
+    const soloOption = Array.from(packOptions).find(option => option.dataset.packType === 'solo');
+    if (soloOption) {
+      soloOption.click();
+    }
+
+    customAddToCartBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      addToCartForm.submit();
+    });
+  });
+</script> 

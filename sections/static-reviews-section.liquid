@@ -1,0 +1,104 @@
+{%- liquid
+  render 'static-reviews'
+-%}
+{% schema %}
+{
+  "name": "Review Section",
+  "tag": "section",
+  "enabled_on": {
+    "templates": ["product"],
+    "groups": ["footer"]
+  },
+  "settings": [
+     {
+      "type": "textarea",
+      "id": "customer_reviews_css",
+      "label": "Customer Reviews CSS",
+      "default": "{}"
+    },
+    {
+      "type": "textarea",
+      "id": "review_card_css",
+      "label": "Review Card Custom CSS",
+      "default": "{}"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "reviewer_info",
+      "name": "Reviewer Info",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "reviewer_info_css",
+          "label": "Reviewer Info Custom CSS",
+          "default": "{}"
+        }
+      ]
+    },
+    {
+      "type": "rating_stars",
+      "name": "Rating Stars",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "rating_stars_css",
+          "label": "Rating Stars Custom CSS",
+          "default": "{}"
+        },
+        {
+            "type": "color",
+            "id": "jdgm_star_color",
+            "label": "Star Color",
+            "default": "#3B82F6"
+        }
+      ]
+    },
+    {
+      "type": "review_content",
+      "name": "Review Content",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "review_content_css",
+          "label": "Review Content Custom CSS",
+          "default": "{}"
+        }
+      ]
+    },
+    {
+      "type": "spinner",
+      "name": "Loading Spinner",
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "spinner_css",
+          "label": "Spinner Custom CSS",
+          "default": "{}"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Static Reviews",
+      "category": "Custom",
+      "blocks": [
+        {
+          "type": "reviewer_info"
+        },
+        {
+          "type": "rating_stars"
+        },
+        {
+          "type": "review_content"
+        },
+        {
+          "type": "spinner"
+        }
+      ]
+    }
+  ]
+}
+
+{% endschema %}
